@@ -34,7 +34,7 @@ with DAG(
 ) as dag:
 
     def re_partition(ds_nodash):
-        from spark_flow.re import re_partition
+        from spark_flow.rep import re_partition
         df_row_cnt, read_path, write_path= re_partition(ds_nodash)
         print(f'df_row_cnt:{df_row_cnt}')
         print(f'read_path:{read_path}')
