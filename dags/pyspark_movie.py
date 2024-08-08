@@ -28,7 +28,7 @@ with DAG(
     description='processing pyspark for movie data',
     schedule="10 2 * * *",
     start_date=datetime(2015, 1, 1),
-    end_date=datetime(2015, 3, 1),
+    end_date=datetime(2015, 1, 10),
     catchup=True,
     tags=['api', 'movie', 'amt', 'pyspark'],
 ) as dag:
