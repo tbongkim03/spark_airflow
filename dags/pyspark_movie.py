@@ -33,8 +33,8 @@ with DAG(
     tags=['api', 'movie', 'amt', 'pyspark'],
 ) as dag:
 
-    def re_partition(ds_nodash):
-        from spark_flow.rep import re_partition
+    def re(ds_nodash):
+        from spark_airflow.rep import re_partition
         df_row_cnt, read_path, write_path= re_partition(ds_nodash)
         print(f'df_row_cnt:{df_row_cnt}')
         print(f'read_path:{read_path}')
@@ -43,16 +43,16 @@ with DAG(
 
     re_task = PythonVirtualenvOperator(
         task_id='re.partition',
-        python_callable=re_partition,
+        python_callable=re,
         system_site_packages=False,
-        requirements=["git+https://github.com/tbongkim03/spark_flow.git@0.2.0/airflowdag"],
+        requirements=["git+https://github.com/tbongkim03/spark_airflow.git@0.2.0/airflowdag"],
     )
 
     join_df = BashOperator(
         task_id='join.df',
         bash_command='''
-            echo "spark-submit....."
-            echo "{{ds_nodash}}"
+        b="/home/michael/spark_airflow2/py"
+        $SPARK_HOME/bin/spark-submit $b/movie_join_df.py {{ds_nodash}}
             '''
     )
 
