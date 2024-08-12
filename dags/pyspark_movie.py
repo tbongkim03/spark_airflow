@@ -19,7 +19,7 @@ from airflow.operators.python import (
 with DAG(
     'pyspark_movie',
     default_args={
-        'depends_on_past': False,
+        'depends_on_past': True,
         'retries': 1,
         'retry_delay': timedelta(seconds=3),
     },
@@ -28,12 +28,12 @@ with DAG(
     description='processing pyspark for movie data',
     schedule="10 2 * * *",
     start_date=datetime(2015, 1, 1),
-    end_date=datetime(2015, 1, 10),
+    end_date=datetime(2025, 1, 5),
     catchup=True,
     tags=['api', 'movie', 'amt', 'pyspark'],
 ) as dag:
 
-    def re(ds_nodash):
+    def re_partition(ds_nodash):
         from spark_airflow.rep import re_partition
         df_row_cnt, read_path, write_path= re_partition(ds_nodash)
         print(f'df_row_cnt:{df_row_cnt}')
@@ -43,24 +43,23 @@ with DAG(
 
     re_task = PythonVirtualenvOperator(
         task_id='re.partition',
-        python_callable=re,
+        python_callable=re_partition,
         system_site_packages=False,
         requirements=["git+https://github.com/tbongkim03/spark_airflow.git@0.2.0/airflowdag"],
+        venv_cache_path='/home/tbongkim03/venv_cache/pyspark_movie/re_task'
     )
 
     join_df = BashOperator(
         task_id='join.df',
         bash_command='''
-        b="/home/michael/spark_airflow2/py"
-        $SPARK_HOME/bin/spark-submit $b/movie_join_df.py {{ds_nodash}}
+            $SPARK_HOME/bin/spark-submit /home/tbongkim03/code/spark_airflow/pyspark/join_df.py "join_df_app" {{ds_nodash}}
             '''
     )
 
     agg_df = BashOperator(
         task_id='agg.df',
         bash_command='''
-            echo "spark-submit....."
-            echo "{{ds_nodash}}"
+            $SPARK_HOME/bin/spark-submit /home/tbongkim03/code/spark_airflow/pyspark/agg_movie.py "agg_movie_app" {{ds_nodash}}
             '''
     )
     
